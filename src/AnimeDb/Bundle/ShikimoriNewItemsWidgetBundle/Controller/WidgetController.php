@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityRepository;
+use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser;
 use AnimeDb\Bundle\ShikimoriFillerBundle\Service\Filler;
 use AnimeDb\Bundle\CatalogBundle\Entity\Source;
@@ -103,6 +104,7 @@ class WidgetController extends Controller
             return $response;
         }
 
+        $translator = $this->get('translator');
         $repository = $this->getDoctrine()->getRepository('AnimeDbCatalogBundle:Source');
         $locale = substr($request->getLocale(), 0, 2);
         $filler = null;
@@ -112,7 +114,7 @@ class WidgetController extends Controller
 
         // build list item entities
         foreach ($list as $key => $item) {
-            $list[$key] = $this->buildItem($item, $locale, $repository, $browser, $filler);
+            $list[$key] = $this->buildItem($item, $locale, $repository, $translator, $browser, $filler);
         }
 
         return $this->render('AnimeDbShikimoriNewItemsWidgetBundle:Widget:index.html.twig', ['items' => $list], $response);
@@ -124,6 +126,7 @@ class WidgetController extends Controller
      * @param array $item
      * @param string $locale
      * @param \Doctrine\ORM\EntityRepository $repository
+     * @param \Symfony\Bundle\FrameworkBundle\Translation\Translator $translator
      * @param \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser $browser
      * @param \AnimeDb\Bundle\ShikimoriFillerBundle\Service\Filler $filler
      *
@@ -133,17 +136,32 @@ class WidgetController extends Controller
         array $item,
         $locale,
         EntityRepository $repository,
+        Translator $translator,
         Browser $browser,
         Filler $filler = null
     ) {
         $entity = new Item();
+        // get item info
+        $info = $browser->get(str_replace('#ID#', $item['id'], self::PATH_ITEM_INFO));
+
+        // set name
         if ($locale == 'ru' && $item['russian']) {
             $entity->setName($item['russian']);
-        } else {
+        } elseif ($locale == 'ja' && $info['japanese']) {
+            $entity->setName($item['japanese'][0]);
+        } {
             $entity->setName($item['name']);
         }
         $entity->setLink($browser->getHost().$item['url']);
         $entity->setCover($browser->getHost().$item['image']['original']);
+
+        // set type
+        $type = new Type();
+        $type->setName($translator->trans($info['kind'], [], 'shikimori'));
+        $type->setLink($browser->getHost().'/animes/type/'.$info['kind']);
+        $entity->setType($type);
+
+        // TODO add genre
 
         /* @var $source \AnimeDb\Bundle\CatalogBundle\Entity\Source|null */
         $source = $repository->findOneByUrl($entity->getLink());

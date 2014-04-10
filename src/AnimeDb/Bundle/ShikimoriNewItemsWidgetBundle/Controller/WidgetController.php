@@ -149,7 +149,7 @@ class WidgetController extends Controller
             $entity->setName($item['russian']);
         } elseif ($locale == 'ja' && $info['japanese']) {
             $entity->setName($item['japanese'][0]);
-        } {
+        } else {
             $entity->setName($item['name']);
         }
         $entity->setLink($browser->getHost().$item['url']);
@@ -161,7 +161,17 @@ class WidgetController extends Controller
         $type->setLink($browser->getHost().'/animes/type/'.$info['kind']);
         $entity->setType($type);
 
-        // TODO add genre
+        // add genres
+        foreach ($info['genres'] as $genre_info) {
+            $genre = new Genre();
+            if ($locale == 'ru') {
+                $genre->setName($genre_info['russian']);
+            } else {
+                $genre->setName($genre_info['name']);
+            }
+            $genre->setLink($browser->getHost().'/animes/genre/'.$genre_info['id'].'-'.$genre_info['name']);
+            $entity->addGenre($genre);
+        }
 
         /* @var $source \AnimeDb\Bundle\CatalogBundle\Entity\Source|null */
         $source = $repository->findOneByUrl($entity->getLink());

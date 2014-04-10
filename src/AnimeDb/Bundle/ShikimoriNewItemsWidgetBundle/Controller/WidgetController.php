@@ -31,13 +31,6 @@ use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Type;
 class WidgetController extends Controller
 {
     /**
-     * Cache expire on 1 day
-     *
-     * @var integer
-     */
-    const CACHE_EXPIRES = 86400;
-
-    /**
      * Size of list items
      *
      * @var integer
@@ -68,7 +61,6 @@ class WidgetController extends Controller
     public function indexAction(Request $request)
     {
         $response = new Response();
-        $response->setExpires(new \DateTime('@'.(time()+self::CACHE_EXPIRES)));
         // update cache if app update and Etag not Modified
         if ($last_update = $this->container->getParameter('last_update') && $request->getETags()) {
             $response->setLastModified(new \DateTime($last_update));

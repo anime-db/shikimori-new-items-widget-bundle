@@ -52,6 +52,27 @@ class WidgetController extends Controller
     const PATH_ITEM_INFO = '/animes/#ID#';
 
     /**
+     * World-art item url
+     *
+     * @var string
+     */
+    const WORLD_ART_URL = 'http://www.world-art.ru/animation/animation.php?id=#ID#';
+
+    /**
+     * MyAnimeList item url
+     *
+     * @var string
+     */
+    const MY_ANIME_LIST_URL = 'http://myanimelist.net/anime/#ID#';
+
+    /**
+     * AniDB item url
+     *
+     * @var string
+     */
+    const ANI_DB_URL = 'http://anidb.net/perl-bin/animedb.pl?show=anime&aid=#ID#';
+
+    /**
      * New items
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
@@ -165,8 +186,19 @@ class WidgetController extends Controller
             $entity->addGenre($genre);
         }
 
+        // find item by sources
+        $sources = [$entity->getLink()];
+        if (!empty($body['world_art_id'])) {
+            $sources[] = str_replace('#ID#', $body['world_art_id'], self::WORLD_ART_URL);
+        }
+        if (!empty($body['myanimelist_id'])) {
+            $sources[] = str_replace('#ID#', $body['myanimelist_id'], self::MY_ANIME_LIST_URL);
+        }
+        if (!empty($body['anidb_id'])) {
+            $sources[] = str_replace('#ID#', $body['anidb_id'], self::ANI_DB_URL);
+        }
         /* @var $source \AnimeDb\Bundle\CatalogBundle\Entity\Source|null */
-        $source = $repository->findOneByUrl($entity->getLink());
+        $source = $repository->findOneByUrl($sources);
         if ($source instanceof Source) {
             $entity->setItem($source->getItem());
         } elseif ($filler instanceof Filler) {

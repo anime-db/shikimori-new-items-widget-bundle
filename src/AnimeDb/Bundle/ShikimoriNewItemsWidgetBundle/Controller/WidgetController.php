@@ -52,6 +52,27 @@ class WidgetController extends Controller
     const PATH_ITEM_INFO = '/animes/#ID#';
 
     /**
+     * World-art item url
+     *
+     * @var string
+     */
+    const WORLD_ART_URL = 'http://www.world-art.ru/animation/animation.php?id=#ID#';
+
+    /**
+     * MyAnimeList item url
+     *
+     * @var string
+     */
+    const MY_ANIME_LIST_URL = 'http://myanimelist.net/anime/#ID#';
+
+    /**
+     * AniDB item url
+     *
+     * @var string
+     */
+    const ANI_DB_URL = 'http://anidb.net/perl-bin/animedb.pl?show=anime&aid=#ID#';
+
+    /**
      * New items
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
@@ -77,9 +98,7 @@ class WidgetController extends Controller
         /* @var $browser \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser */
         $browser = $this->get('anime_db.shikimori.browser');
         $list = $browser->get(str_replace('#LIMIT#', self::LIST_LIMIT, self::PATH_NEW_ITEMS));
-
-        // TODO bug in API #2
-        $list = array_slice($list, 0, self::LIST_LIMIT);
+        $list = array_slice($list, 0, self::LIST_LIMIT); // see #2
 
         // create cache Etag by list items
         if ($list) {
@@ -92,7 +111,7 @@ class WidgetController extends Controller
         $response->setEtag(md5($etag));
 
         // response was not modified for this request
-        if ($response->isNotModified($request)) {
+        if ($response->isNotModified($request) || !$list) {
             return $response;
         }
 
@@ -109,7 +128,11 @@ class WidgetController extends Controller
             $list[$key] = $this->buildItem($item, $locale, $repository, $translator, $browser, $filler);
         }
 
-        return $this->render('AnimeDbShikimoriNewItemsWidgetBundle:Widget:index.html.twig', ['items' => $list], $response);
+        return $this->render(
+            'AnimeDbShikimoriNewItemsWidgetBundle:Widget:index.html.twig',
+            ['items' => $list],
+            $response
+        );
     }
 
     /**
@@ -140,7 +163,7 @@ class WidgetController extends Controller
         if ($locale == 'ru' && $item['russian']) {
             $entity->setName($item['russian']);
         } elseif ($locale == 'ja' && $info['japanese']) {
-            $entity->setName($item['japanese'][0]);
+            $entity->setName($info['japanese'][0]);
         } else {
             $entity->setName($item['name']);
         }
@@ -165,8 +188,19 @@ class WidgetController extends Controller
             $entity->addGenre($genre);
         }
 
+        // find item by sources
+        $sources = [$entity->getLink()];
+        if (!empty($info['world_art_id'])) {
+            $sources[] = str_replace('#ID#', $info['world_art_id'], self::WORLD_ART_URL);
+        }
+        if (!empty($info['myanimelist_id'])) {
+            $sources[] = str_replace('#ID#', $info['myanimelist_id'], self::MY_ANIME_LIST_URL);
+        }
+        if (!empty($info['ani_db_id'])) {
+            $sources[] = str_replace('#ID#', $info['ani_db_id'], self::ANI_DB_URL);
+        }
         /* @var $source \AnimeDb\Bundle\CatalogBundle\Entity\Source|null */
-        $source = $repository->findOneByUrl($entity->getLink());
+        $source = $repository->findOneByUrl($sources);
         if ($source instanceof Source) {
             $entity->setItem($source->getItem());
         } elseif ($filler instanceof Filler) {

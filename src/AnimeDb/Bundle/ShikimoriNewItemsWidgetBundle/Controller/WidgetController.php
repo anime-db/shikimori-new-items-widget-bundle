@@ -35,7 +35,7 @@ class WidgetController extends Controller
      *
      * @var integer
      */
-    const LIST_LIMIT = 4;
+    const LIST_LIMIT = 6;
 
     /**
      * Cache lifetime 1 day
@@ -185,24 +185,6 @@ class WidgetController extends Controller
         }
         $entity->setLink($browser->getHost().$item['url']);
         $entity->setCover($browser->getHost().$item['image']['original']);
-
-        // set type
-        $type = new Type();
-        $type->setName($translator->trans($info['kind'], [], 'shikimori'));
-        $type->setLink($browser->getHost().'/animes/type/'.$info['kind']);
-        $entity->setType($type);
-
-        // add genres
-        foreach ($info['genres'] as $genre_info) {
-            $genre = new Genre();
-            if ($locale == 'ru') {
-                $genre->setName($genre_info['russian']);
-            } else {
-                $genre->setName($genre_info['name']);
-            }
-            $genre->setLink($browser->getHost().'/animes/genre/'.$genre_info['id'].'-'.$genre_info['name']);
-            $entity->addGenre($genre);
-        }
 
         // find item by sources
         $sources = [$entity->getLink()];

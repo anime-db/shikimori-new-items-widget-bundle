@@ -38,6 +38,13 @@ class WidgetController extends Controller
     const LIST_LIMIT = 4;
 
     /**
+     * Cache lifetime 1 day
+     *
+     * @var integer
+     */
+    const CACHE_LIFETIME = 86400;
+
+    /**
      * API path for get new items
      *
      * @var string
@@ -83,7 +90,7 @@ class WidgetController extends Controller
     {
         $response = new Response();
         // update cache if app update and Etag not Modified
-        if ($last_update = $this->container->getParameter('last_update') && $request->getETags()) {
+        if (($last_update = $this->container->getParameter('last_update')) && $request->getETags()) {
             $response->setLastModified(new \DateTime($last_update));
         }
         // check items last update
@@ -93,6 +100,15 @@ class WidgetController extends Controller
         if ($response->getLastModified() < $last_update) {
             $response->setLastModified($last_update);
         }
+
+        $response->setMaxAge(self::CACHE_LIFETIME);
+        $response->setSharedMaxAge(self::CACHE_LIFETIME);
+        $response->setExpires((new \DateTime())->modify('+'.self::CACHE_LIFETIME.' seconds'));
+        // response was not modified for this request
+        if ($response->isNotModified($request)) {
+            return $response;
+        }
+
         $etag = $repository->count().':';
 
         /* @var $browser \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser */

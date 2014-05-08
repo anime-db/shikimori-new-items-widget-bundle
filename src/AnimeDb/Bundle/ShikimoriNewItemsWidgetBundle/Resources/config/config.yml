@@ -1,0 +1,6 @@
+assetic:
+    bundles: [ AnimeDbShikimoriNewItemsWidgetBundle ]
+    assets:
+        stylesheets:
+            inputs:
+                - @AnimeDbShikimoriNewItemsWidgetBundle/Resources/public/css/*.css

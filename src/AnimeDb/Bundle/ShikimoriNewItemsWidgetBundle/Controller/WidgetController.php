@@ -14,13 +14,10 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityRepository;
-use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser;
 use AnimeDb\Bundle\ShikimoriFillerBundle\Service\Filler;
 use AnimeDb\Bundle\CatalogBundle\Entity\Source;
 use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Item;
-use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Genre;
-use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Type;
 
 /**
  * New items widget
@@ -35,7 +32,7 @@ class WidgetController extends Controller
      *
      * @var integer
      */
-    const LIST_LIMIT = 4;
+    const LIST_LIMIT = 6;
 
     /**
      * API path for get new items
@@ -73,6 +70,13 @@ class WidgetController extends Controller
     const ANI_DB_URL = 'http://anidb.net/perl-bin/animedb.pl?show=anime&aid=#ID#';
 
     /**
+     * Cache lifetime 1 day
+     *
+     * @var integer
+     */
+    const CACHE_LIFETIME = 86400;
+
+    /**
      * New items
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
@@ -82,8 +86,12 @@ class WidgetController extends Controller
     public function indexAction(Request $request)
     {
         $response = new Response();
-        // update cache if app update and Etag not Modified
-        if ($last_update = $this->container->getParameter('last_update') && $request->getETags()) {
+        $response->setMaxAge(self::CACHE_LIFETIME);
+        $response->setSharedMaxAge(self::CACHE_LIFETIME);
+        $response->setExpires((new \DateTime())->modify('+'.self::CACHE_LIFETIME.' seconds'));
+
+        // update cache if app update
+        if ($last_update = $this->container->getParameter('last_update')) {
             $response->setLastModified(new \DateTime($last_update));
         }
         // check items last update
@@ -93,7 +101,8 @@ class WidgetController extends Controller
         if ($response->getLastModified() < $last_update) {
             $response->setLastModified($last_update);
         }
-        $etag = $repository->count().':';
+
+        $response->setEtag(md5($repository->count()));
 
         /* @var $browser \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser */
         $browser = $this->get('anime_db.shikimori.browser');
@@ -102,20 +111,18 @@ class WidgetController extends Controller
 
         // create cache Etag by list items
         if ($list) {
-            $ids = [];
+            $ids = '';
             foreach ($list as $item) {
-                $ids[] = $item['id'];
+                $ids .= ':'.$item['id'];
             }
-            $etag .= implode(',', $ids);
+            $response->setEtag(md5($ids.'-'.$response->getEtag()));
         }
-        $response->setEtag(md5($etag));
 
         // response was not modified for this request
         if ($response->isNotModified($request) || !$list) {
             return $response;
         }
 
-        $translator = $this->get('translator');
         $repository = $this->getDoctrine()->getRepository('AnimeDbCatalogBundle:Source');
         $locale = substr($request->getLocale(), 0, 2);
         $filler = null;
@@ -125,7 +132,7 @@ class WidgetController extends Controller
 
         // build list item entities
         foreach ($list as $key => $item) {
-            $list[$key] = $this->buildItem($item, $locale, $repository, $translator, $browser, $filler);
+            $list[$key] = $this->buildItem($item, $locale, $repository, $browser, $filler);
         }
 
         return $this->render(
@@ -141,7 +148,6 @@ class WidgetController extends Controller
      * @param array $item
      * @param string $locale
      * @param \Doctrine\ORM\EntityRepository $repository
-     * @param \Symfony\Bundle\FrameworkBundle\Translation\Translator $translator
      * @param \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser $browser
      * @param \AnimeDb\Bundle\ShikimoriFillerBundle\Service\Filler $filler
      *
@@ -151,7 +157,6 @@ class WidgetController extends Controller
         array $item,
         $locale,
         EntityRepository $repository,
-        Translator $translator,
         Browser $browser,
         Filler $filler = null
     ) {
@@ -169,24 +174,6 @@ class WidgetController extends Controller
         }
         $entity->setLink($browser->getHost().$item['url']);
         $entity->setCover($browser->getHost().$item['image']['original']);
-
-        // set type
-        $type = new Type();
-        $type->setName($translator->trans($info['kind'], [], 'shikimori'));
-        $type->setLink($browser->getHost().'/animes/type/'.$info['kind']);
-        $entity->setType($type);
-
-        // add genres
-        foreach ($info['genres'] as $genre_info) {
-            $genre = new Genre();
-            if ($locale == 'ru') {
-                $genre->setName($genre_info['russian']);
-            } else {
-                $genre->setName($genre_info['name']);
-            }
-            $genre->setLink($browser->getHost().'/animes/genre/'.$genre_info['id'].'-'.$genre_info['name']);
-            $entity->addGenre($genre);
-        }
 
         // find item by sources
         $sources = [$entity->getLink()];

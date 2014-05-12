@@ -1,0 +1,15 @@
+.widget-section.shikimori .list-items .item-container {
+	height: 202px;
+	width: 130px;
+	margin: 8px;
+}
+.widget-section.shikimori .front a {
+	line-height: 202px;
+}
+.widget-section.shikimori .item img {
+	max-height: 202px;
+	max-width: 130px;
+}
+.widget-section.shikimori .list-items .name strong {
+	margin: 23px 5px 0 5px;
+}

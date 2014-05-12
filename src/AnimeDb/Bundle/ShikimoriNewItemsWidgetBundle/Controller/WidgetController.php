@@ -79,8 +79,8 @@ class WidgetController extends Controller
     public function indexAction(Request $request)
     {
         $response = new Response();
-        // update cache if app update and Etag not Modified
-        if (($last_update = $this->container->getParameter('last_update')) && $request->getETags()) {
+        // update cache if app update
+        if ($last_update = $this->container->getParameter('last_update')) {
             $response->setLastModified(new \DateTime($last_update));
         }
         // check items last update

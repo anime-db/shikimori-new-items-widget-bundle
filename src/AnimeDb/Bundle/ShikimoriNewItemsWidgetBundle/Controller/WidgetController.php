@@ -92,7 +92,7 @@ class WidgetController extends Controller
             $response->setLastModified($last_update);
         }
 
-        $etag = $repository->count().':';
+        $response->setEtag(md5($repository->count()));
 
         /* @var $browser \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser */
         $browser = $this->get('anime_db.shikimori.browser');
@@ -105,9 +105,8 @@ class WidgetController extends Controller
             foreach ($list as $item) {
                 $ids[] = $item['id'];
             }
-            $etag .= implode(',', $ids);
+            $response->setEtag(md5(implode(':', $ids).'-'.$response->getEtag()));
         }
-        $response->setEtag(md5($etag));
 
         // response was not modified for this request
         if ($response->isNotModified($request) || !$list) {

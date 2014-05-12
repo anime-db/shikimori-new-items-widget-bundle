@@ -70,6 +70,13 @@ class WidgetController extends Controller
     const ANI_DB_URL = 'http://anidb.net/perl-bin/animedb.pl?show=anime&aid=#ID#';
 
     /**
+     * Cache lifetime 1 day
+     *
+     * @var integer
+     */
+    const CACHE_LIFETIME = 86400;
+
+    /**
      * New items
      *
      * @param \Symfony\Component\HttpFoundation\Request $request
@@ -79,6 +86,10 @@ class WidgetController extends Controller
     public function indexAction(Request $request)
     {
         $response = new Response();
+        $response->setMaxAge(self::CACHE_LIFETIME);
+        $response->setSharedMaxAge(self::CACHE_LIFETIME);
+        $response->setExpires((new \DateTime())->modify('+'.self::CACHE_LIFETIME.' seconds'));
+
         // update cache if app update
         if ($last_update = $this->container->getParameter('last_update')) {
             $response->setLastModified(new \DateTime($last_update));

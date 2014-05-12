@@ -3,6 +3,9 @@
 	width: 130px;
 	margin: 8px;
 }
+.widget-section.shikimori .front a {
+	line-height: 202px;
+}
 .widget-section.shikimori .item img {
 	max-height: 202px;
 	max-width: 130px;

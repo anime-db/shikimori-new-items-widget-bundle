@@ -19,8 +19,6 @@ use AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser;
 use AnimeDb\Bundle\ShikimoriFillerBundle\Service\Filler;
 use AnimeDb\Bundle\CatalogBundle\Entity\Source;
 use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Item;
-use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Genre;
-use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Type;
 
 /**
  * New items widget
@@ -36,13 +34,6 @@ class WidgetController extends Controller
      * @var integer
      */
     const LIST_LIMIT = 6;
-
-    /**
-     * Cache lifetime 1 day
-     *
-     * @var integer
-     */
-    const CACHE_LIFETIME = 86400;
 
     /**
      * API path for get new items
@@ -99,14 +90,6 @@ class WidgetController extends Controller
         $last_update = $repository->getLastUpdate();
         if ($response->getLastModified() < $last_update) {
             $response->setLastModified($last_update);
-        }
-
-        $response->setMaxAge(self::CACHE_LIFETIME);
-        $response->setSharedMaxAge(self::CACHE_LIFETIME);
-        $response->setExpires((new \DateTime())->modify('+'.self::CACHE_LIFETIME.' seconds'));
-        // response was not modified for this request
-        if ($response->isNotModified($request)) {
-            return $response;
         }
 
         $etag = $repository->count().':';

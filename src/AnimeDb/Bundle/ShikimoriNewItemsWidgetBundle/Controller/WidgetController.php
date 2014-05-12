@@ -14,7 +14,6 @@ use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Doctrine\ORM\EntityRepository;
-use Symfony\Bundle\FrameworkBundle\Translation\Translator;
 use AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser;
 use AnimeDb\Bundle\ShikimoriFillerBundle\Service\Filler;
 use AnimeDb\Bundle\CatalogBundle\Entity\Source;
@@ -101,11 +100,11 @@ class WidgetController extends Controller
 
         // create cache Etag by list items
         if ($list) {
-            $ids = [];
+            $ids = '';
             foreach ($list as $item) {
-                $ids[] = $item['id'];
+                $ids .= ':'.$item['id'];
             }
-            $response->setEtag(md5(implode(':', $ids).'-'.$response->getEtag()));
+            $response->setEtag(md5($ids.'-'.$response->getEtag()));
         }
 
         // response was not modified for this request
@@ -113,7 +112,6 @@ class WidgetController extends Controller
             return $response;
         }
 
-        $translator = $this->get('translator');
         $repository = $this->getDoctrine()->getRepository('AnimeDbCatalogBundle:Source');
         $locale = substr($request->getLocale(), 0, 2);
         $filler = null;
@@ -123,7 +121,7 @@ class WidgetController extends Controller
 
         // build list item entities
         foreach ($list as $key => $item) {
-            $list[$key] = $this->buildItem($item, $locale, $repository, $translator, $browser, $filler);
+            $list[$key] = $this->buildItem($item, $locale, $repository, $browser, $filler);
         }
 
         return $this->render(
@@ -139,7 +137,6 @@ class WidgetController extends Controller
      * @param array $item
      * @param string $locale
      * @param \Doctrine\ORM\EntityRepository $repository
-     * @param \Symfony\Bundle\FrameworkBundle\Translation\Translator $translator
      * @param \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser $browser
      * @param \AnimeDb\Bundle\ShikimoriFillerBundle\Service\Filler $filler
      *
@@ -149,7 +146,6 @@ class WidgetController extends Controller
         array $item,
         $locale,
         EntityRepository $repository,
-        Translator $translator,
         Browser $browser,
         Filler $filler = null
     ) {

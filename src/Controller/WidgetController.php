@@ -74,9 +74,8 @@ class WidgetController extends Controller
         /* @var $widget \AnimeDb\Bundle\ShikimoriWidgetBundle\Service\Widget */
         $widget = $this->get('anime_db.shikimori.widget');
 
-        /* @var $browser \AnimeDb\Bundle\ShikimoriBrowserBundle\Service\Browser */
-        $browser = $this->get('anime_db.shikimori.browser');
-        $list = $browser->get(str_replace('#LIMIT#', self::LIST_LIMIT, self::PATH_NEW_ITEMS));
+        $list = $this->get('anime_db.shikimori.browser')
+            ->get(str_replace('#LIMIT#', self::LIST_LIMIT, self::PATH_NEW_ITEMS));
         $list = array_slice($list, 0, self::LIST_LIMIT); // see #2
 
         // create cache Etag by list items

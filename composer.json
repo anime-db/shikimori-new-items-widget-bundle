@@ -10,6 +10,11 @@
             "AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle\\": "src/"
         }
     },
+    "autoload-dev": {
+        "psr-4": {
+            "AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle\\Tests\\": "tests/"
+        }
+    },
     "require": {
         "php": ">=5.4.0",
         "anime-db/catalog-bundle": ">=0.4.5",

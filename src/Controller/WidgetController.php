@@ -12,8 +12,6 @@ namespace AnimeDb\Bundle\ShikimoriNewItemsWidgetBundle\Controller;
 
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use AnimeDb\Bundle\CatalogBundle\Entity\Widget\Item;
 
 /**
  * New items widget
@@ -53,24 +51,8 @@ class WidgetController extends Controller
      */
     public function indexAction(Request $request)
     {
-        $response = new Response();
-        $response->setMaxAge(self::CACHE_LIFETIME);
-        $response->setSharedMaxAge(self::CACHE_LIFETIME);
-        $response->setExpires((new \DateTime())->modify('+'.self::CACHE_LIFETIME.' seconds'));
-
-        // update cache if app update
-        if ($last_update = $this->container->getParameter('last_update')) {
-            $response->setLastModified(new \DateTime($last_update));
-        }
-        // check items last update
-        /* @var $repository \AnimeDb\Bundle\CatalogBundle\Repository\Item */
-        $repository = $this->getDoctrine()->getRepository('AnimeDbCatalogBundle:Item');
-        $last_update = $repository->getLastUpdate();
-        if ($response->getLastModified() < $last_update) {
-            $response->setLastModified($last_update);
-        }
-
-        $response->setEtag(md5($repository->count()));
+        /* @var $response \Symfony\Component\HttpFoundation\Response */
+        $response = $this->get('cache_time_keeper')->getResponse([], self::CACHE_LIFETIME);
         /* @var $widget \AnimeDb\Bundle\ShikimoriWidgetBundle\Service\Widget */
         $widget = $this->get('anime_db.shikimori.widget');
 
@@ -78,7 +60,7 @@ class WidgetController extends Controller
             ->get(str_replace('#LIMIT#', self::LIST_LIMIT, self::PATH_NEW_ITEMS));
         $list = array_slice($list, 0, self::LIST_LIMIT); // see #2
 
-        // create cache Etag by list items
+        // add Etag from list items
         $response->setEtag($widget->hash($list));
 
         // response was not modified for this request

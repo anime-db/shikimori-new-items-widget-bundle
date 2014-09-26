@@ -6,7 +6,9 @@
     "homepage": "http://github.com/anime-db/shikimori-new-items-widget-bundle",
     "version": "0.1.1",
     "autoload": {
-        "psr-0": { "AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle": "src/" }
+        "psr-4": {
+            "AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle\\": "src/"
+        }
     },
     "require": {
         "php": ">=5.4.0",

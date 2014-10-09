@@ -18,7 +18,7 @@
     "require": {
         "php": ">=5.4.0",
         "anime-db/catalog-bundle": "dev-develop",
-        "anime-db/shikimori-widget-bundle": "0.1.*"
+        "anime-db/shikimori-widget-bundle": "dev-develop"
     },
     "require-dev": {
         "anime-db/shikimori-filler-bundle": "0.1.*"

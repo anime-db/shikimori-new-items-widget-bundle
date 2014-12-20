@@ -4,7 +4,7 @@
 	"type" : "anime-db-plugin",
 	"description" : "Plugin Shikimori for the catalog Anime DB",
 	"homepage" : "http://github.com/anime-db/shikimori-new-items-widget-bundle",
-	"version" : "0.1.1",
+	"version" : "0.1.2",
 	"autoload" : {
 		"psr-4" : {
 			"AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle\\" : "src/"
@@ -17,11 +17,11 @@
 	},
 	"require" : {
 		"php" : ">=5.4.0",
-		"anime-db/catalog-bundle" : "dev-develop",
-		"anime-db/shikimori-widget-bundle" : "dev-develop"
+		"anime-db/catalog-bundle" : ">=0.4.17",
+		"anime-db/shikimori-widget-bundle" : ">=0.1.1"
 	},
 	"require-dev" : {
-		"anime-db/shikimori-filler-bundle" : "dev-develop"
+		"anime-db/shikimori-filler-bundle" : ">=0.1.9"
 	},
 	"suggest" : {
 		"anime-db/shikimori-filler-bundle" : "Allows to add links to the filling items"

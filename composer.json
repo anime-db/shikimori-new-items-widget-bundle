@@ -1,17 +1,30 @@
 {
-    "name": "anime-db/shikimori-new-items-widget-bundle",
-    "license": "GPL-3.0",
-    "type": "anime-db-plugin",
-    "description": "Plugin Shikimori for the catalog Anime DB",
-    "homepage": "http://github.com/anime-db/shikimori-new-items-widget-bundle",
-    "version": "0.1.1",
-    "autoload": {
-        "psr-0": { "AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle": "src/" }
-    },
-    "require": {
-        "php": ">=5.4.0",
-        "anime-db/catalog-bundle": ">=0.4.5",
-        "anime-db/shikimori-browser-bundle": "0.1.*"
-    },
-    "minimum-stability": "dev"
+	"name" : "anime-db/shikimori-new-items-widget-bundle",
+	"license" : "GPL-3.0",
+	"type" : "anime-db-plugin",
+	"description" : "Plugin Shikimori for the catalog Anime DB",
+	"homepage" : "http://github.com/anime-db/shikimori-new-items-widget-bundle",
+	"version" : "0.1.2",
+	"autoload" : {
+		"psr-4" : {
+			"AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle\\" : "src/"
+		}
+	},
+	"autoload-dev" : {
+		"psr-4" : {
+			"AnimeDb\\Bundle\\ShikimoriNewItemsWidgetBundle\\Tests\\" : "tests/"
+		}
+	},
+	"require" : {
+		"php" : ">=5.4.0",
+		"anime-db/catalog-bundle" : ">=0.4.17",
+		"anime-db/shikimori-widget-bundle" : ">=0.1.1"
+	},
+	"require-dev" : {
+		"anime-db/shikimori-filler-bundle" : ">=0.1.9"
+	},
+	"suggest" : {
+		"anime-db/shikimori-filler-bundle" : "Allows to add links to the filling items"
+	},
+	"minimum-stability" : "dev"
 }
